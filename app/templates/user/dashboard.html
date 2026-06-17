@@ -55,6 +55,10 @@
           <span class="info-key">Identifiant</span>
           <code class="info-val">{{ site.slug }}</code>
         </li>
+        <li class="info-item">
+          <span class="info-key">Email</span>
+          <code class="info-val">{{ smtp_user }}</code>
+        </li>
       </ul>
       <a href="{{ wp_lostpassword_url }}" target="_blank" rel="noopener noreferrer"
          class="btn btn-ghost btn-sm"
@@ -65,34 +69,6 @@
     </div>
   </section>
 
-  <!-- Config SMTP -->
-  <section class="card" aria-labelledby="smtp-title">
-    <div class="card-head">
-      <h2 id="smtp-title" class="card-title">
-        <i class="bi bi-envelope" aria-hidden="true" style="margin-right:6px;color:var(--brand)"></i>Configuration email
-      </h2>
-    </div>
-    <div class="card-body">
-      <ul class="info-list">
-        <li class="info-item">
-          <span class="info-key">Serveur SMTP</span>
-          <code class="info-val">smtp.forwardemail.net</code>
-        </li>
-        <li class="info-item">
-          <span class="info-key">Port</span>
-          <code class="info-val">465 <span style="color:var(--muted);font-family:var(--font);font-size:.75rem">(SSL)</span></code>
-        </li>
-        <li class="info-item">
-          <span class="info-key">Utilisateur</span>
-          <code class="info-val">{{ smtp_user }}</code>
-        </li>
-        <li class="info-item">
-          <span class="info-key">Mot de passe</span>
-          <span class="text-muted text-sm">Configuré automatiquement</span>
-        </li>
-      </ul>
-    </div>
-  </section>
 
 </div>
 {% endblock %}
