@@ -49,14 +49,19 @@ def send_welcome_email(
       <td style="padding:10px 14px"><code>{slug}</code></td>
     </tr>
     <tr>
+      <td style="padding:10px 14px;font-weight:bold">Mot de passe</td>
+      <td style="padding:10px 14px"><code>{wp_admin_password}</code></td>
+    </tr>
+    <tr style="background:#f5f5f5">
       <td style="padding:10px 14px;font-weight:bold">Email</td>
       <td style="padding:10px 14px"><code>{from_addr}</code></td>
     </tr>
   </table>
 
   <p>
-    Connectez-vous sur le portail avec votre adresse <strong>{from_addr}</strong>
-    pour retrouver toutes vos informations et définir votre mot de passe WordPress :
+    Par mesure de sécurité, nous vous recommandons de changer votre mot de passe
+    dès votre première connexion. Rendez-vous sur le portail avec votre adresse
+    <strong>{from_addr}</strong> et cliquez sur <em>Mot de passe oublié ?</em> :
   </p>
   <p style="margin:20px 0">
     <a href="{portal_url}" style="background:#a00000;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold">
