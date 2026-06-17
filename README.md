@@ -87,12 +87,10 @@ Cookie de session `SameSite=Strict` — les requêtes cross-site ne transportent
 Le container app tourne en utilisateur non-root (UID 1001, GID 989). Il faut créer le répertoire de données et lui donner les bons droits **avant** le premier démarrage.
 
 ```bash
-# Créer le répertoire persistant
-sudo mkdir -p /home/monminilab-admin
-
 # UID 1001 = utilisateur app dans le container
 # GID 989  = groupe docker sur l'hôte (vérifier avec : stat -c "%g" /var/run/docker.sock)
-sudo chown -R 1001:989 /home/monminilab-admin
+sudo mkdir -p /path/to/data
+sudo chown -R 1001:989 /path/to/data
 ```
 
 > Si le GID du socket Docker est différent de 989 sur votre machine, adaptez le `groupadd --gid` dans le `Dockerfile` et reconstruisez l'image.
@@ -120,7 +118,6 @@ Au démarrage, l'app vérifie que `SECRET_KEY` est définie et non vide — elle
 Après chaque push sur `main`, attendre la fin du build CI puis :
 
 ```bash
-cd /home/monminilab-admin   # ou le dossier où se trouve docker-compose.yml
 sudo docker compose pull app
 sudo docker compose up -d app
 ```
@@ -157,7 +154,7 @@ BASE_DOMAIN=votre-domaine.fr
 ### Générer un hash bcrypt pour ADMIN_PASSWORD
 
 ```bash
-python3 -c "from passlib.context import CryptContext; print(CryptContext(['bcrypt']).hash('votre-mot-de-passe'))"
+python3 -c "import bcrypt; print(bcrypt.hashpw(b'votre-mot-de-passe', bcrypt.gensalt()).decode())"
 ```
 
 ### Générer une SECRET_KEY
@@ -225,8 +222,8 @@ app/
 
 ## Données persistantes
 
-| Chemin | Contenu |
-|--------|---------|
-| `/home/monminilab-admin/app.db` | SQLite — sites |
-| `/home/mariadb/` | Données MariaDB (512 MB RAM) |
-| `/home/wordpress/{slug}/` | Fichiers WordPress (128 MB RAM par container) |
+| Variable / Chemin | Contenu |
+|-------------------|---------|
+| `DB_PATH` (défaut `/data/app.db`) | SQLite — sites |
+| Volume MariaDB | Données MariaDB (512 MB RAM) |
+| `SITES_DATA_DIR/{slug}/` | Fichiers WordPress (128 MB RAM par container) |
