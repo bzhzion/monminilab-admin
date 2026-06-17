@@ -22,11 +22,22 @@ logging.basicConfig(
 )
 _log = logging.getLogger("monminilab")
 
-app = FastAPI(title="MonMiniLab Admin", docs_url="/api/docs", redoc_url=None)
+app = FastAPI(title="MonMiniLab Admin", docs_url=None, redoc_url=None)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY, max_age=86400, same_site="strict", https_only=True)
+app.add_middleware(SessionMiddleware, secret_key=settings.session_secret, max_age=86400, same_site="strict", https_only=True)
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
@@ -60,5 +71,5 @@ async def on_startup():
         _log.warning(
             "ADMIN_PASSWORD n'est pas un hash bcrypt - le mot de passe est stocke en clair. "
             "Generez un hash avec : "
-            "python3 -c \"from passlib.context import CryptContext; print(CryptContext(['bcrypt']).hash('votre-mdp'))\""
+            "python3 -c \"import bcrypt; print(bcrypt.hashpw(b'votre-mdp', bcrypt.gensalt()).decode())\""
         )

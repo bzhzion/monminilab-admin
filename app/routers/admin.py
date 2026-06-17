@@ -10,11 +10,13 @@ from email_validator import EmailNotValidError, validate_email as _validate_emai
 from fastapi import APIRouter, Depends, Form, HTTPException, Path, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.auth import create_access_token, require_admin
 from app.config import settings
 from app.database import SessionLocal, get_db
+from app.limiter import limiter
 from app.models import Site, SiteStatus
 from app.services import cloudflare_service, docker_service, forwardemail_service, mail_service, mariadb_service
 from app.validators import RESERVED_SLUGS, SLUG_RE
@@ -27,6 +29,9 @@ _RESERVED_SLUGS = RESERVED_SLUGS
 
 # État des provisionnements en cours : slug → dict
 JOBS: dict[str, dict] = {}
+
+# Protège la section critique allocation de port + insertion + enregistrement JOBS
+_provision_lock = asyncio.Lock()
 
 
 def _job_step(job: dict, n: int, label: str | None = None, status: str = "running") -> None:
@@ -187,6 +192,7 @@ async def admin_login_page(request: Request):
 
 
 @router.post("/admin/login")
+@limiter.limit("10/minute")
 async def admin_login(request: Request, password: str = Form(..., max_length=128)):
     if not settings.verify_admin_password(password):
         return templates.TemplateResponse(
@@ -238,37 +244,51 @@ async def provision_start(
     except EmailNotValidError as exc:
         return JSONResponse({"error": f"Email invalide : {exc}"}, status_code=400)
 
-    db = SessionLocal()
-    try:
-        if db.query(Site).filter(Site.slug == slug).first():
-            return JSONResponse({"error": f"Le slug '{slug}' est déjà utilisé"}, status_code=409)
+    async with _provision_lock:
+        db = SessionLocal()
+        try:
+            if db.query(Site).filter(Site.slug == slug).first():
+                return JSONResponse({"error": f"Le slug '{slug}' est déjà utilisé"}, status_code=409)
 
-        last_port = db.query(Site.port).order_by(Site.port.desc()).first()
-        port = (last_port[0] + 1) if last_port else settings.PORT_START
+            last_port = db.query(Site.port).order_by(Site.port.desc()).first()
+            port = (last_port[0] + 1) if last_port else settings.PORT_START
 
-        site = Site(slug=slug, port=port, client_email=client_email, status=SiteStatus.creating)
-        db.add(site)
-        db.commit()
-    finally:
-        db.close()
+            site = Site(
+                slug=slug,
+                port=port,
+                client_email=client_email,
+                client_cf_email=f"{slug}@{settings.BASE_DOMAIN}",
+                status=SiteStatus.creating,
+            )
+            db.add(site)
+            try:
+                db.commit()
+            except IntegrityError:
+                db.rollback()
+                return JSONResponse(
+                    {"error": "Conflit lors de la création (slug ou port déjà utilisé)"},
+                    status_code=409,
+                )
+        finally:
+            db.close()
 
-    JOBS[slug] = {
-        "steps": {n: "pending" for n in range(1, 9)},
-        "labels": {
-            1: "Base de données MariaDB",
-            2: f"Alias email {slug}@{settings.BASE_DOMAIN}",
-            3: "Mot de passe SMTP ForwardEmail",
-            4: "Création container WordPress",
-            5: "Démarrage WordPress…",
-            6: "Installation WordPress",
-            7: "Tunnel Cloudflare + DNS",
-            8: "Envoi email de bienvenue",
-        },
-        "done": False,
-        "error": None,
-        "url": None,
-        "log": [],
-    }
+        JOBS[slug] = {
+            "steps": {n: "pending" for n in range(1, 9)},
+            "labels": {
+                1: "Base de données MariaDB",
+                2: f"Alias email {slug}@{settings.BASE_DOMAIN}",
+                3: "Mot de passe SMTP ForwardEmail",
+                4: "Création container WordPress",
+                5: "Démarrage WordPress…",
+                6: "Installation WordPress",
+                7: "Tunnel Cloudflare + DNS",
+                8: "Envoi email de bienvenue",
+            },
+            "done": False,
+            "error": None,
+            "url": None,
+            "log": [],
+        }
 
     asyncio.create_task(_run_provisioning(slug, client_email, port))
     return JSONResponse({"slug": slug})
@@ -314,7 +334,8 @@ async def setup_portail(_: bool = Depends(require_admin)):
         cloudflare_service.add_dns_record("portail")
         return JSONResponse({"ok": True, "message": "portail.monminilab.fr ajouté au tunnel et au DNS."})
     except Exception as e:
-        return JSONResponse({"ok": False, "message": str(e)}, status_code=500)
+        _log.error("Echec setup portail : %s", e)
+        return JSONResponse({"ok": False, "message": "Erreur interne lors de la configuration du portail"}, status_code=500)
 
 
 @router.get("/admin/sites/{slug}/logs", response_class=HTMLResponse)

@@ -10,6 +10,7 @@ Toutes les autres routes requièrent :
 Swagger UI disponible sur /api/docs
 """
 import asyncio
+import logging
 import secrets
 from datetime import timedelta
 from typing import List, Optional
@@ -25,6 +26,8 @@ from app.limiter import limiter
 from app.models import Site, SiteStatus
 from app.services import docker_service
 from app.validators import RESERVED_SLUGS, SLUG_RE
+
+_log = logging.getLogger("monminilab.api")
 
 router = APIRouter(prefix="/api", tags=["API"])
 
@@ -83,7 +86,8 @@ async def list_sites(db: Session = Depends(get_db), _=Depends(require_api_token)
 
 @router.post("/sites", status_code=202, summary="Créer et provisionner un site")
 async def create_site(body: SiteCreate, _=Depends(require_api_token)):
-    from app.routers.admin import JOBS, _run_provisioning
+    from app.routers.admin import JOBS, _provision_lock, _run_provisioning
+    from sqlalchemy.exc import IntegrityError
 
     slug = body.slug.strip().lower()
     if not SLUG_RE.match(slug):
@@ -91,36 +95,47 @@ async def create_site(body: SiteCreate, _=Depends(require_api_token)):
     if slug in RESERVED_SLUGS:
         raise HTTPException(status_code=422, detail=f"Le slug '{slug}' est reserve")
 
-    db = SessionLocal()
-    try:
-        if db.query(Site).filter(Site.slug == slug).first():
-            raise HTTPException(status_code=409, detail=f"Le slug '{slug}' est deja utilise")
-        last_port = db.query(Site.port).order_by(Site.port.desc()).first()
-        port = (last_port[0] + 1) if last_port else settings.PORT_START
-        site = Site(slug=slug, port=port, client_email=body.client_email, status=SiteStatus.creating)
-        db.add(site)
-        db.commit()
-    finally:
-        db.close()
+    async with _provision_lock:
+        db = SessionLocal()
+        try:
+            if db.query(Site).filter(Site.slug == slug).first():
+                raise HTTPException(status_code=409, detail=f"Le slug '{slug}' est deja utilise")
+            last_port = db.query(Site.port).order_by(Site.port.desc()).first()
+            port = (last_port[0] + 1) if last_port else settings.PORT_START
+            site = Site(
+                slug=slug,
+                port=port,
+                client_email=str(body.client_email),
+                client_cf_email=f"{slug}@{settings.BASE_DOMAIN}",
+                status=SiteStatus.creating,
+            )
+            db.add(site)
+            try:
+                db.commit()
+            except IntegrityError:
+                db.rollback()
+                raise HTTPException(status_code=409, detail="Conflit lors de la creation (slug ou port deja utilise)")
+        finally:
+            db.close()
 
-    JOBS[slug] = {
-        "steps": {n: "pending" for n in range(1, 9)},
-        "labels": {
-            1: "Base de données MariaDB",
-            2: f"Alias email {slug}@{settings.BASE_DOMAIN}",
-            3: "Mot de passe SMTP ForwardEmail",
-            4: "Création container WordPress",
-            5: "Démarrage WordPress…",
-            6: "Installation WordPress",
-            7: "Tunnel Cloudflare + DNS",
-            8: "Envoi email de bienvenue",
-        },
-        "done": False,
-        "error": None,
-        "url": None,
-        "log": [],
-    }
-    asyncio.create_task(_run_provisioning(slug, body.client_email, port))
+        JOBS[slug] = {
+            "steps": {n: "pending" for n in range(1, 9)},
+            "labels": {
+                1: "Base de données MariaDB",
+                2: f"Alias email {slug}@{settings.BASE_DOMAIN}",
+                3: "Mot de passe SMTP ForwardEmail",
+                4: "Création container WordPress",
+                5: "Démarrage WordPress…",
+                6: "Installation WordPress",
+                7: "Tunnel Cloudflare + DNS",
+                8: "Envoi email de bienvenue",
+            },
+            "done": False,
+            "error": None,
+            "url": None,
+            "log": [],
+        }
+    asyncio.create_task(_run_provisioning(slug, str(body.client_email), port))
     return {"slug": slug, "status": "provisioning", "status_url": f"/api/sites/{slug}/status"}
 
 
@@ -185,7 +200,8 @@ async def reset_wp_password(slug: str = _SLUG_PATH, db: Session = Depends(get_db
             ["wp", "user", "update", slug, f"--user_pass={new_pass}", "--skip-email"]
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        _log.error("Echec reset mot de passe WP pour %s : %s", slug, e)
+        raise HTTPException(status_code=500, detail="Erreur interne lors de la réinitialisation du mot de passe WordPress") from e
     # Mot de passe non stocké en DB — renvoyé une seule fois dans la réponse
     return {"slug": slug, "new_wp_password": new_pass}
 
@@ -202,7 +218,8 @@ async def reset_smtp_password(slug: str = _SLUG_PATH, db: Session = Depends(get_
         new_smtp_pass = await asyncio.to_thread(forwardemail_service.generate_smtp_password, slug)
         await asyncio.to_thread(docker_service.update_smtp_env, slug, new_smtp_pass)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        _log.error("Echec reset mot de passe SMTP pour %s : %s", slug, e)
+        raise HTTPException(status_code=500, detail="Erreur interne lors de la réinitialisation du mot de passe SMTP") from e
     site.smtp_pass_encrypted = settings.encrypt(new_smtp_pass)
     db.commit()
     return {"slug": slug, "smtp_updated": True}

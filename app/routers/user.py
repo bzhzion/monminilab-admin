@@ -2,10 +2,11 @@ import logging
 import time
 
 import httpx
+import jwt
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from jose import JWTError, jwt
+from jwt.algorithms import RSAAlgorithm
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -58,15 +59,16 @@ def _verify_cf_jwt(token: str) -> dict | None:
     issuer = f"https://{settings.CF_TEAM_DOMAIN}.cloudflareaccess.com"
     for key in keys_to_try:
         try:
+            public_key = RSAAlgorithm.from_jwk(key)
             payload = jwt.decode(
                 token,
-                key,
+                public_key,
                 algorithms=["RS256"],
                 audience=settings.CF_ACCESS_AUD,
                 issuer=issuer,
             )
             return payload
-        except JWTError:
+        except Exception:
             continue
     return None
 
@@ -93,7 +95,17 @@ def _get_site_from_cf(request: Request, db: Session):
     if not _SLUG_RE.match(slug):
         return None
 
-    return db.query(Site).filter(Site.slug == slug, Site.status == SiteStatus.ready).first()
+    site = db.query(Site).filter(Site.slug == slug, Site.status == SiteStatus.ready).first()
+    if not site:
+        return None
+
+    # Défense contre IDOR : l'identité CF Access doit correspondre à client_cf_email.
+    # Pour les sites anciens (client_cf_email null), fallback sur le comportement historique.
+    if site.client_cf_email is not None and cf_email != site.client_cf_email:
+        _log.warning("IDOR potentiel : email CF %s ne correspond pas au site %s", cf_email, slug)
+        return None
+
+    return site
 
 
 @router.get("/my", response_class=HTMLResponse)

@@ -18,8 +18,9 @@ class Site(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     slug = Column(String(30), unique=True, index=True, nullable=False)
-    port = Column(Integer, nullable=False)
+    port = Column(Integer, nullable=False, unique=True)
     client_email = Column(String(255), nullable=False)
+    client_cf_email = Column(String(255), nullable=True)  # identité CF Access attendue (nullable pour compat)
     smtp_pass_encrypted = Column(String(500), nullable=True)
     wp_admin_password = Column(String(255), nullable=True)  # colonne conservée pour compat DB, ne plus écrire
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -1,8 +1,15 @@
 import httpx
 
 from app.config import settings
+from app.validators import SLUG_RE
 
 CF_API = "https://api.cloudflare.com/client/v4"
+
+
+def _validate_slug(slug: str) -> None:
+    """Défense en profondeur : refuse tout slug ne respectant pas le format attendu."""
+    if not SLUG_RE.match(slug):
+        raise ValueError(f"Slug invalide : {slug!r}")
 
 
 def _bearer_headers() -> dict:
@@ -39,6 +46,7 @@ def _put_tunnel_config(config: dict) -> None:
 
 
 def add_tunnel_ingress(slug: str, port: int) -> None:
+    _validate_slug(slug)
     config = _get_tunnel_config()
     ingress = config.get("ingress", [{"service": "http_status:404"}])
 
@@ -55,6 +63,7 @@ def add_tunnel_ingress(slug: str, port: int) -> None:
 
 
 def remove_tunnel_ingress(slug: str) -> None:
+    _validate_slug(slug)
     try:
         config = _get_tunnel_config()
         hostname = f"{slug}.{settings.BASE_DOMAIN}"
@@ -65,6 +74,7 @@ def remove_tunnel_ingress(slug: str) -> None:
 
 
 def add_dns_record(slug: str) -> None:
+    _validate_slug(slug)
     resp = httpx.post(
         f"{CF_API}/zones/{settings.CF_ZONE_ID}/dns_records",
         headers=_bearer_headers(),
@@ -80,6 +90,7 @@ def add_dns_record(slug: str) -> None:
 
 
 def remove_dns_record(slug: str) -> None:
+    _validate_slug(slug)
     hostname = f"{slug}.{settings.BASE_DOMAIN}"
     try:
         resp = httpx.get(
