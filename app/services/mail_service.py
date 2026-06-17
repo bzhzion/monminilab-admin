@@ -65,7 +65,7 @@ def send_welcome_email(
   <ol style="margin:0 0 20px 20px;padding:0;line-height:2">
     <li>Rendez-vous sur le portail : <a href="{portal_url}">{portal_url}</a></li>
     <li>Connectez-vous avec votre adresse <strong>{from_addr}</strong> — vous recevrez un code de vérification sur votre email</li>
-    <li>Cliquez sur <strong>Mot de passe oublié ?</strong></li>
+    <li>Une fois connecté, cliquez sur <strong>Mot de passe oublié ?</strong></li>
     <li>Suivez le lien reçu par email pour choisir votre nouveau mot de passe</li>
   </ol>
   <p style="margin:20px 0">
@@ -82,9 +82,6 @@ def send_welcome_email(
     Si vous ne recevez pas de code, pensez à vérifier votre dossier indésirables.
   </p>
 
-  <p style="color:#888;font-size:13px;margin-top:24px">
-    Ce message a été envoyé automatiquement par MonMiniLab.
-  </p>
 </body>
 </html>"""
 
