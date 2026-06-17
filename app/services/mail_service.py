@@ -74,7 +74,15 @@ def send_welcome_email(
     </a>
   </p>
 
-  <p style="color:#888;font-size:13px;margin-top:32px">
+  <p style="background:#fff8e1;border-left:4px solid #f0a500;padding:12px 16px;font-size:13px;margin-top:24px">
+    <strong>Votre adresse {from_addr}</strong> transfère automatiquement tous les emails reçus
+    vers votre adresse personnelle (<strong>{client_email}</strong>). Les codes de vérification
+    et réinitialisations de mot de passe arriveront donc directement dans votre boîte habituelle.<br><br>
+    <strong>Attention :</strong> ces messages atterrissent parfois dans les <strong>spams</strong>.
+    Si vous ne recevez pas de code, pensez à vérifier votre dossier indésirables.
+  </p>
+
+  <p style="color:#888;font-size:13px;margin-top:24px">
     Ce message a été envoyé automatiquement par MonMiniLab.
   </p>
 </body>
