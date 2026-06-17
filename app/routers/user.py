@@ -115,6 +115,7 @@ async def user_dashboard(request: Request, db: Session = Depends(get_db)):
         return templates.TemplateResponse(request, "user/not_authenticated.html", {})
 
     site_url = f"https://{site.slug}.{settings.BASE_DOMAIN}"
+
     return templates.TemplateResponse(
         request,
         "user/dashboard.html",
