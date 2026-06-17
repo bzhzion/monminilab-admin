@@ -182,7 +182,10 @@ async def _run_provisioning(slug: str, client_email: str, port: int) -> None:
 
 
 @router.get("/", response_class=HTMLResponse)
-async def root():
+async def root(request: Request):
+    host = request.headers.get("host", "")
+    if host.startswith("portail."):
+        return RedirectResponse("/my")
     return RedirectResponse("/admin")
 
 
