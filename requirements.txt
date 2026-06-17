@@ -7,7 +7,7 @@ pymysql
 docker
 httpx
 python-jose[cryptography]
-passlib[bcrypt]
+bcrypt
 pydantic-settings
 itsdangerous
 email-validator

@@ -3,11 +3,11 @@ import hashlib
 import re
 import secrets
 
+import bcrypt as _bcrypt
+
 from cryptography.fernet import Fernet
-from passlib.context import CryptContext
 from pydantic_settings import BaseSettings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 _BCRYPT_RE = re.compile(r"^\$2[aby]\$")
 
 
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     def verify_admin_password(self, plain: str) -> bool:
         if _BCRYPT_RE.match(self.ADMIN_PASSWORD):
             try:
-                return pwd_context.verify(plain, self.ADMIN_PASSWORD)
+                return _bcrypt.checkpw(plain.encode(), self.ADMIN_PASSWORD.encode())
             except Exception:
                 return False
         return secrets.compare_digest(plain.encode(), self.ADMIN_PASSWORD.encode())
