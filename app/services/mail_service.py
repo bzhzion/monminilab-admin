@@ -23,6 +23,7 @@ def send_welcome_email(
     from_addr = f"{slug}@{settings.BASE_DOMAIN}"
     site_url = f"https://{slug}.{settings.BASE_DOMAIN}"
     wp_admin_url = f"{site_url}/wp-admin"
+    portal_url = f"https://portail.{settings.BASE_DOMAIN}"
 
     subject = f"Votre site WordPress {slug}.{settings.BASE_DOMAIN} est prêt !"
 
@@ -45,24 +46,26 @@ def send_welcome_email(
     </tr>
     <tr style="background:#f5f5f5">
       <td style="padding:10px 14px;font-weight:bold">Identifiant</td>
-      <td style="padding:10px 14px"><code>admin</code></td>
+      <td style="padding:10px 14px"><code>{slug}</code></td>
     </tr>
     <tr>
-      <td style="padding:10px 14px;font-weight:bold">Mot de passe</td>
-      <td style="padding:10px 14px"><code>{wp_admin_password}</code></td>
+      <td style="padding:10px 14px;font-weight:bold">Email</td>
+      <td style="padding:10px 14px"><code>{from_addr}</code></td>
     </tr>
   </table>
 
-  <h3 style="color:#1a1a1a">Email</h3>
   <p>
-    L'adresse <strong>{from_addr}</strong> est configurée et redirige automatiquement
-    vers votre adresse email. Votre site WordPress est déjà capable d'envoyer
-    des emails (notifications, réinitialisation de mot de passe, etc.).
+    Connectez-vous sur le portail avec votre adresse <strong>{from_addr}</strong>
+    pour retrouver toutes vos informations et définir votre mot de passe WordPress :
+  </p>
+  <p style="margin:20px 0">
+    <a href="{portal_url}" style="background:#a00000;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold">
+      Accéder au portail
+    </a>
   </p>
 
   <p style="color:#888;font-size:13px;margin-top:32px">
     Ce message a été envoyé automatiquement par MonMiniLab.
-    Conservez-le précieusement, il contient vos identifiants d'accès.
   </p>
 </body>
 </html>"""
