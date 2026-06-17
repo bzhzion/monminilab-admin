@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion — MonMiniLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0f11; --surface: #161820; --border: #242830;
+      --text: #dce1eb; --muted: #939db3;
+      --brand: #a00000; --brand-h: #c00000;
+      --red: #ef4444; --red-bg: rgba(239,68,68,.10);
+      --focus: #5b9dff;
+      --r: 7px; --font: 'Syne', sans-serif;
+    }
+    html { font-size: 15px; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    .login-wrap { width: 100%; max-width: 360px; padding: 24px; }
+    .login-brand {
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 12px; margin-bottom: 32px;
+    }
+    .brand-mark {
+      width: 48px; height: 48px;
+      background: var(--brand);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; font-weight: 800; color: #fff; letter-spacing: -.02em;
+    }
+    .brand-name { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .brand-sub  { font-size: .75rem; color: var(--muted); margin-top: -8px; }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+    }
+    .login-title {
+      font-size: .95rem; font-weight: 700; margin-bottom: 22px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .login-title i { color: var(--brand); }
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block; font-size: .72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
+      color: var(--muted); margin-bottom: 7px;
+    }
+    .form-input {
+      width: 100%; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--r);
+      padding: 10px 13px; font-family: var(--font); font-size: .9rem;
+      color: var(--text); outline: none;
+      transition: border-color .14s, box-shadow .14s;
+    }
+    .form-input:focus {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(91,157,255,.25);
+    }
+    .form-input::placeholder { color: var(--muted); }
+    .btn-submit {
+      width: 100%; padding: 11px;
+      background: var(--brand); color: #fff;
+      border: none; border-radius: var(--r);
+      font-family: var(--font); font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: background .14s; margin-top: 6px;
+    }
+    .btn-submit:hover { background: var(--brand-h); }
+    .alert-err {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--red-bg); color: var(--red);
+      border: 1px solid rgba(239,68,68,.18);
+      padding: 10px 13px; border-radius: var(--r);
+      font-size: .82rem; margin-bottom: 18px;
+    }
+    .login-footer {
+      text-align: center; margin-top: 24px;
+      font-size: .72rem; color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-brand">
+      <div class="brand-mark" aria-hidden="true">MML</div>
+      <div>
+        <div class="brand-name">MonMiniLab</div>
+        <div class="brand-sub">
+          {% if role == "admin" %}Administration{% else %}Espace client{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="login-card">
+      <h1 class="login-title">
+        {% if role == "admin" %}
+          <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>Connexion administrateur
+        {% else %}
+          <i class="bi bi-person-fill" aria-hidden="true"></i>Connexion
+        {% endif %}
+      </h1>
+
+      {% if error %}
+      <div class="alert-err" role="alert">
+        <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>{{ error }}
+      </div>
+      {% endif %}
+
+      {% if role == "admin" %}
+      <form method="post" action="/admin/login">
+        <div class="form-group">
+          <label class="form-label" for="admin-password">Mot de passe</label>
+          <input type="password" id="admin-password" name="password"
+                 class="form-input" autofocus required maxlength="128"
+                 autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn-submit">Se connecter</button>
+      </form>
+      {% else %}
+      <form method="post" action="/login">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Adresse email</label>
+          <input type="email" id="login-email" name="email"
+                 class="form-input" autofocus required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Mot de passe</label>
+          <input type="password" id="login-password" name="password"
+                 class="form-input" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn-submit">Se connecter</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <div class="login-footer">Hébergement WordPress géré</div>
+  </div>
+</body>
+</html>

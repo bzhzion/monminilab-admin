@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Mon espace — MonMiniLab{% endblock %}
+{% block home_url %}/my{% endblock %}
+
+{% block nav_actions %}
+  <a href="/cdn-cgi/access/logout" class="btn btn-ghost btn-sm">
+    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>Déconnexion
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="page-hd" style="margin-bottom:28px">
+  <div>
+    <h1 style="font-size:1.05rem;font-weight:700;margin-bottom:4px">{{ site.slug }}.monminilab.fr</h1>
+    <p class="text-muted text-sm">Votre espace WordPress</p>
+  </div>
+  <span class="badge badge-ready">Actif</span>
+</div>
+
+<div class="grid-2">
+
+  <!-- Accès au site -->
+  <section class="card" aria-labelledby="access-title">
+    <div class="card-head">
+      <h2 id="access-title" class="card-title">
+        <i class="bi bi-globe2" aria-hidden="true" style="margin-right:6px;color:var(--brand)"></i>Accès au site
+      </h2>
+    </div>
+    <div class="card-body">
+      <ul class="info-list" style="margin-bottom:16px">
+        <li class="info-item">
+          <span class="info-key">Site public</span>
+          <div class="flex-center gap-2">
+            <code class="info-val">{{ site_url }}</code>
+            <a href="{{ site_url }}" target="_blank" rel="noopener noreferrer"
+               aria-label="Ouvrir le site public dans un nouvel onglet"
+               style="color:var(--muted);font-size:.85rem;text-decoration:none">
+              <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+            </a>
+          </div>
+        </li>
+        <li class="info-item">
+          <span class="info-key">WP Admin</span>
+          <div class="flex-center gap-2">
+            <code class="info-val">{{ wp_admin_url }}</code>
+            <a href="{{ wp_admin_url }}" target="_blank" rel="noopener noreferrer"
+               aria-label="Ouvrir l'interface WP Admin dans un nouvel onglet"
+               style="color:var(--muted);font-size:.85rem;text-decoration:none">
+              <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+            </a>
+          </div>
+        </li>
+        <li class="info-item">
+          <span class="info-key">Identifiant</span>
+          <code class="info-val">{{ site.slug }}</code>
+        </li>
+      </ul>
+      <a href="{{ wp_lostpassword_url }}" target="_blank" rel="noopener noreferrer"
+         class="btn btn-ghost btn-sm"
+         style="width:100%;justify-content:center"
+         aria-label="Mot de passe WordPress oublié (ouvre WordPress dans un nouvel onglet)">
+        <i class="bi bi-key" aria-hidden="true"></i>Mot de passe oublié ?
+      </a>
+    </div>
+  </section>
+
+  <!-- Config SMTP -->
+  <section class="card" aria-labelledby="smtp-title">
+    <div class="card-head">
+      <h2 id="smtp-title" class="card-title">
+        <i class="bi bi-envelope" aria-hidden="true" style="margin-right:6px;color:var(--brand)"></i>Configuration email
+      </h2>
+    </div>
+    <div class="card-body">
+      <ul class="info-list">
+        <li class="info-item">
+          <span class="info-key">Serveur SMTP</span>
+          <code class="info-val">smtp.forwardemail.net</code>
+        </li>
+        <li class="info-item">
+          <span class="info-key">Port</span>
+          <code class="info-val">465 <span style="color:var(--muted);font-family:var(--font);font-size:.75rem">(SSL)</span></code>
+        </li>
+        <li class="info-item">
+          <span class="info-key">Utilisateur</span>
+          <code class="info-val">{{ smtp_user }}</code>
+        </li>
+        <li class="info-item">
+          <span class="info-key">Mot de passe</span>
+          <span class="text-muted text-sm">Reçu par email à la création</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — MonMiniLab{% endblock %}
+{% block home_url %}/admin{% endblock %}
+
+{% block nav_actions %}
+  <a href="/admin/create" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus" aria-hidden="true"></i>Nouveau site
+  </a>
+  <a href="/admin/logs" class="btn btn-ghost btn-sm" aria-label="Logs application">
+    <i class="bi bi-terminal" aria-hidden="true"></i>Logs
+  </a>
+  <form method="post" action="/admin/logout" style="display:inline">
+    <button type="submit" class="btn btn-ghost btn-sm">
+      <i class="bi bi-box-arrow-right" aria-hidden="true"></i>Déconnexion
+    </button>
+  </form>
+{% endblock %}
+
+{% block content %}
+<div class="page-hd">
+  <h1 class="page-hd-title">Sites WordPress</h1>
+  <span class="pill" aria-label="{{ sites|length }} site{% if sites|length > 1 %}s{% endif %}">
+    {{ sites|length }} site{% if sites|length > 1 %}s{% endif %}
+  </span>
+</div>
+
+{% if sites %}
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="data-table" aria-label="Liste des sites WordPress">
+      <thead>
+        <tr>
+          <th scope="col">Slug</th>
+          <th scope="col">URL</th>
+          <th scope="col">Email client</th>
+          <th scope="col">Port</th>
+          <th scope="col">Statut</th>
+          <th scope="col">Créé le</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for site in sites %}
+        <tr>
+          <td class="fw-7 mono">{{ site.slug }}</td>
+          <td>
+            <a href="https://{{ site.slug }}.{{ domain }}" target="_blank"
+               rel="noopener noreferrer"
+               class="flex-center gap-2 text-muted text-sm"
+               style="text-decoration:none"
+               aria-label="{{ site.slug }}.{{ domain }} (ouvre dans un nouvel onglet)">
+              <span class="mono">{{ site.slug }}.{{ domain }}</span>
+              <i class="bi bi-arrow-up-right" aria-hidden="true" style="opacity:.5;font-size:.8rem"></i>
+            </a>
+          </td>
+          <td class="text-muted text-sm">{{ site.client_email }}</td>
+          <td class="mono text-muted text-sm">{{ site.port }}</td>
+          <td>
+            {% if site.status.value == "ready" %}
+              <span class="badge badge-ready">Actif</span>
+            {% elif site.status.value == "creating" %}
+              <span class="badge badge-creating">En cours</span>
+            {% else %}
+              <span class="badge badge-error">Erreur</span>
+            {% endif %}
+          </td>
+          <td class="mono text-muted text-sm" style="white-space:nowrap">
+            {{ site.created_at.strftime("%d/%m/%Y %H:%M") }}
+          </td>
+          <td>
+            <div class="flex-center gap-2">
+              <a href="/admin/sites/{{ site.slug }}/logs" class="btn btn-ghost btn-sm"
+                 aria-label="Voir les logs du site {{ site.slug }}">
+                <i class="bi bi-terminal" aria-hidden="true"></i>
+              </a>
+              <form method="post" action="/admin/sites/{{ site.slug }}/delete"
+                    onsubmit="return confirm('Supprimer définitivement « {{ site.slug }} » ?')">
+                <button type="submit" class="btn btn-danger btn-sm"
+                        aria-label="Supprimer le site {{ site.slug }}">
+                  <i class="bi bi-trash3" aria-hidden="true"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% else %}
+<div class="card">
+  <div style="text-align:center;padding:64px 24px">
+    <i class="bi bi-globe2" aria-hidden="true"
+       style="font-size:2.2rem;color:var(--dim);display:block;margin-bottom:16px"></i>
+    <p class="text-muted text-sm" style="margin-bottom:22px">Aucun site pour l'instant.</p>
+    <a href="/admin/create" class="btn btn-primary">
+      <i class="bi bi-plus" aria-hidden="true"></i>Créer le premier site
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

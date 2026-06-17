@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accès refusé — MonMiniLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0f11; --surface: #161820; --border: #242830;
+      --text: #dce1eb; --muted: #939db3;
+      --brand: #a00000; --red: #ef4444; --red-bg: rgba(239,68,68,.08);
+      --focus: #5b9dff;
+    }
+    html { font-size: 15px; }
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex;
+      align-items: center; justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    .wrap { text-align: center; max-width: 360px; padding: 24px; }
+    .icon-wrap {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--red-bg); border: 1px solid rgba(239,68,68,.18);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; font-size: 1.4rem; color: var(--red);
+    }
+    h1 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+    p  { font-size: .85rem; color: var(--muted); line-height: 1.7; }
+    .brand {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin-bottom: 36px; text-decoration: none;
+    }
+    .brand-mark {
+      width: 24px; height: 24px; background: var(--brand); border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .5rem; font-weight: 800; color: #fff;
+    }
+    .brand-name { font-size: .88rem; font-weight: 700; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap" role="main">
+    <a href="/" class="brand">
+      <span class="brand-mark" aria-hidden="true">MML</span>
+      <span class="brand-name">MonMiniLab</span>
+    </a>
+    <div class="icon-wrap" aria-hidden="true">
+      <i class="bi bi-shield-x"></i>
+    </div>
+    <h1>Accès non autorisé</h1>
+    <p>Aucun site actif n'est associé à votre adresse email. Contactez l'administrateur si vous pensez qu'il s'agit d'une erreur.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block home_url %}/admin{% endblock %}
+
+{% block nav_breadcrumb %}
+  <span class="nav-divider" aria-hidden="true"></span>
+  {% if slug %}
+    <a href="/admin/sites/{{ slug }}/logs" style="font-size:.83rem;color:var(--muted);text-decoration:none" aria-current="page">Logs {{ slug }}</a>
+  {% else %}
+    <span style="font-size:.83rem;color:var(--muted)" aria-current="page">Logs application</span>
+  {% endif %}
+{% endblock %}
+
+{% block nav_actions %}
+  <a href="{{ back_url }}" class="btn btn-ghost btn-sm">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>{{ back_label }}
+  </a>
+  {% if slug %}
+  <a href="/admin/logs" class="btn btn-ghost btn-sm">
+    <i class="bi bi-terminal" aria-hidden="true"></i>Logs app
+  </a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .log-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+  }
+  .log-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+  .log-toolbar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .log-toolbar-label {
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--muted); flex: 1;
+  }
+  .log-body {
+    font-family: var(--mono);
+    font-size: .75rem;
+    line-height: 1.6;
+    color: #c8d0e0;
+    padding: 16px;
+    max-height: 70vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .log-body:empty::after { content: "Aucun log disponible."; color: var(--muted); }
+
+  /* Coloration syntaxique minimale */
+  .log-line-error  { color: #f87171; }
+  .log-line-warn   { color: #fbbf24; }
+  .log-line-info   { color: #c8d0e0; }
+  .log-line-debug  { color: var(--muted); }
+  .log-ts { color: var(--dim); }
+</style>
+
+<div class="log-header">
+  <div>
+    <h1 style="font-size:1.05rem;font-weight:700;margin-bottom:4px">{{ title }}</h1>
+    <p class="text-muted text-sm">{{ subtitle }}</p>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="location.reload()">
+    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>Rafraîchir
+  </button>
+</div>
+
+<div class="log-wrap">
+  <div class="log-toolbar">
+    <span class="log-toolbar-label">
+      <i class="bi bi-terminal-fill" aria-hidden="true" style="margin-right:6px;color:var(--brand)"></i>stdout / stderr
+    </span>
+    <button class="btn btn-ghost btn-sm" style="font-size:.72rem;padding:3px 9px" onclick="scrollToBottom()" aria-label="Aller en bas">
+      <i class="bi bi-chevron-double-down" aria-hidden="true"></i>Bas
+    </button>
+    <button class="btn btn-ghost btn-sm" style="font-size:.72rem;padding:3px 9px" onclick="copyLogs()" aria-label="Copier les logs">
+      <i class="bi bi-clipboard" aria-hidden="true"></i>Copier
+    </button>
+  </div>
+  <div class="log-body" id="log-body" role="log" aria-label="Contenu des logs" aria-live="off">{{ logs | e }}</div>
+</div>
+
+<script>
+  function scrollToBottom() {
+    const el = document.getElementById('log-body');
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function copyLogs() {
+    const text = document.getElementById('log-body').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = event.currentTarget;
+      btn.innerHTML = '<i class="bi bi-clipboard-check" aria-hidden="true"></i>Copié';
+      setTimeout(() => {
+        btn.innerHTML = '<i class="bi bi-clipboard" aria-hidden="true"></i>Copier';
+      }, 2000);
+    });
+  }
+
+  // Scroll to bottom on load
+  scrollToBottom();
+
+  // Auto-refresh toutes les 10s si le slug est défini (WP logs)
+  {% if slug %}
+  setTimeout(() => location.reload(), 10000);
+  {% endif %}
+</script>
+{% endblock %}

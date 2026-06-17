@@ -1,0 +1,38 @@
+services:
+  app:
+    image: ghcr.io/bzhzion/monminilab-admin:latest
+    container_name: monminilab-admin
+    restart: always
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/monminilab-admin:/data
+    env_file: .env
+    networks:
+      - wp-network
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    depends_on:
+      - wordpress-db
+
+  wordpress-db:
+    image: mariadb:lts
+    container_name: wordpress-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MYSQL_DATABASE: wordpress_admin
+    volumes:
+      - /home/mariadb:/var/lib/mysql
+    networks:
+      - wp-network
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+networks:
+  wp-network:
+    driver: bridge
+    name: wp-network

@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Nouveau site — MonMiniLab{% endblock %}
+{% block home_url %}/admin{% endblock %}
+
+{% block nav_breadcrumb %}
+  <span class="nav-divider" aria-hidden="true"></span>
+  <span style="font-size:.83rem;color:var(--muted)" aria-current="page">Nouveau site</span>
+{% endblock %}
+
+{% block nav_actions %}
+  <a href="/admin" class="btn btn-ghost btn-sm" id="back-btn">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>Retour
+  </a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:520px;margin:0 auto">
+  <h1 style="font-size:1.05rem;font-weight:700;margin-bottom:24px">Créer un site WordPress</h1>
+
+  <div class="card">
+    <div class="card-body">
+
+      <!-- Formulaire -->
+      <div id="form-section">
+        <form id="provision-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="slug">Slug du site</label>
+            <div class="input-row">
+              <input
+                type="text" id="slug" name="slug" class="form-input"
+                placeholder="mon-site"
+                autocapitalize="none" autocorrect="off" spellcheck="false"
+                aria-describedby="slug-hint"
+                required autofocus
+                oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')"
+              />
+              <span class="input-suffix" aria-hidden="true">.monminilab.fr</span>
+            </div>
+            <p class="form-hint" id="slug-hint">3 à 30 caractères — lettres minuscules, chiffres, tirets.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="client_email">Email du client</label>
+            <input
+              type="email" id="client_email" name="client_email"
+              class="form-input" placeholder="client@exemple.fr"
+              aria-describedby="email-hint"
+              required
+            />
+            <p class="form-hint" id="email-hint">
+              Alias ForwardEmail + accès portail via
+              <span class="mono" style="font-size:.78rem">slug@monminilab.fr</span>.
+            </p>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px">
+            <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Lancer la création
+          </button>
+        </form>
+      </div>
+
+      <!-- Progression -->
+      <div id="progress-section" class="hidden" aria-live="polite" aria-atomic="false">
+        <div class="progress-status" id="progress-label" role="status">
+          <span class="spin" aria-hidden="true"></span>Provisionnement en cours…
+        </div>
+
+        <ul class="step-list" id="steps-list" aria-label="Étapes du provisionnement">
+          <li class="step-item" id="step-1">
+            <span class="step-dot" aria-hidden="true"><i class="bi bi-circle" style="font-size:.6rem"></i></span>
+            <span class="step-text">Base de données MariaDB</span>
+            <span class="sr-only" id="step-1-status">En attente</span>
+          </li>
+          <li class="step-item" id="step-2">
+            <span class="step-dot" aria-hidden="true"><i class="bi bi-circle" style="font-size:.6rem"></i></span>
+            <span class="step-text">Alias email ForwardEmail</span>
+            <span class="sr-only" id="step-2-status">En attente</span>
+          </li>
+          <li class="step-item" id="step-3">
+            <span class="step-dot" aria-hidden="true"><i class="bi bi-circle" style="font-size:.6rem"></i></span>
+            <span class="step-text">Mot de passe SMTP</span>
+            <span class="sr-only" id="step-3-status">En attente</span>
+          </li>
+          <li class="step-item" id="step-4">
+            <span class="step-dot" aria-hidden="true"><i class="bi bi-circle" style="font-size:.6rem"></i></span>
+            <span class="step-text">Container WordPress</span>
+            <span class="sr-only" id="step-4-status">En attente</span>
+          </li>
+          <li class="step-item" id="step-5">
+            <span class="step-dot" aria-hidden="true"><i class="bi bi-circle" style="font-size:.6rem"></i></span>
+            <span class="step-text">Démarrage WordPress</span>
+            <span class="sr-only" id="step-5-status">En attente</span>
+          </li>
+          <li class="step-item" id="step-6">
+            <span class="step-dot" aria-hidden="true"><i class="bi bi-circle" style="font-size:.6rem"></i></span>
+            <span class="step-text">Installation WordPress</span>
+            <span class="sr-only" id="step-6-status">En attente</span>
+          </li>
+          <li class="step-item" id="step-7">
+            <span class="step-dot" aria-hidden="true"><i class="bi bi-circle" style="font-size:.6rem"></i></span>
+            <span class="step-text">Tunnel Cloudflare + DNS</span>
+            <span class="sr-only" id="step-7-status">En attente</span>
+          </li>
+          <li class="step-item" id="step-8">
+            <span class="step-dot" aria-hidden="true"><i class="bi bi-circle" style="font-size:.6rem"></i></span>
+            <span class="step-text">Email de bienvenue</span>
+            <span class="sr-only" id="step-8-status">En attente</span>
+          </li>
+        </ul>
+
+        <!-- Succès -->
+        <div id="success-section" class="hidden" style="margin-top:20px" role="status">
+          <div class="alert alert-ok" style="margin-bottom:14px">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>Site créé avec succès.
+          </div>
+          <div class="url-bar" style="margin-bottom:14px">
+            <code id="site-url-text"></code>
+            <a id="site-url-link" href="#" target="_blank" rel="noopener noreferrer"
+               aria-label="Ouvrir le nouveau site dans un nouvel onglet">
+              <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+            </a>
+          </div>
+          <a href="/admin" class="btn btn-ghost btn-sm">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>Retour au dashboard
+          </a>
+        </div>
+
+        <!-- Erreur -->
+        <div id="error-section" class="hidden" style="margin-top:20px" role="alert">
+          <div class="alert alert-err" style="margin-bottom:14px">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            <span id="error-message"></span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="resetForm()">
+            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Réessayer
+          </button>
+        </div>
+
+        <!-- Log détaillé -->
+        <details id="log-details" style="margin-top:18px">
+          <summary style="font-size:.75rem;color:var(--muted);cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:6px">
+            <i class="bi bi-terminal" aria-hidden="true"></i>Détails (log)
+          </summary>
+          <div id="log-output" style="
+            margin-top:10px;
+            background:var(--bg);
+            border:1px solid var(--border);
+            border-radius:var(--r);
+            padding:12px;
+            font-family:var(--mono);
+            font-size:.72rem;
+            line-height:1.6;
+            color:#c8d0e0;
+            max-height:200px;
+            overflow-y:auto;
+            white-space:pre-wrap;
+          " role="log" aria-live="polite"></div>
+        </details>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  let pollInterval = null;
+  let currentSlug  = null;
+
+  const SR_LABELS = { pending: 'En attente', running: 'En cours…', done: 'Terminé', error: 'Échoué' };
+
+  document.getElementById('provision-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const slug  = document.getElementById('slug').value.trim().toLowerCase();
+    const email = document.getElementById('client_email').value.trim();
+
+    document.getElementById('form-section').classList.add('hidden');
+    document.getElementById('progress-section').classList.remove('hidden');
+    document.getElementById('back-btn').classList.add('hidden');
+
+    const fd = new FormData();
+    fd.append('slug', slug);
+    fd.append('client_email', email);
+
+    const res  = await fetch('/admin/provision', { method: 'POST', body: fd });
+    const data = await res.json();
+
+    if (!res.ok) { showError(data.error || 'Erreur au démarrage'); return; }
+
+    currentSlug  = data.slug;
+    pollInterval = setInterval(pollStatus, 2000);
+  });
+
+  async function pollStatus() {
+    try {
+      const res = await fetch('/admin/provision-status/' + currentSlug);
+      if (!res.ok) return;
+      const job = await res.json();
+
+      for (let n = 1; n <= 8; n++) updateStep(n, job.steps[n] || 'pending', job.labels[n]);
+
+      if (job.log) updateLog(job.log);
+      if (job.error) { clearInterval(pollInterval); showError(job.error); return; }
+
+      if (job.done) {
+        clearInterval(pollInterval);
+        const lbl = document.getElementById('progress-label');
+        lbl.innerHTML = '<i class="bi bi-check-circle" aria-hidden="true" style="color:var(--green)"></i>Provisionnement terminé.';
+        document.getElementById('site-url-text').textContent = job.url;
+        document.getElementById('site-url-link').href = job.url;
+        document.getElementById('site-url-link').setAttribute('aria-label', 'Ouvrir ' + job.url + ' dans un nouvel onglet');
+        document.getElementById('success-section').classList.remove('hidden');
+      }
+    } catch(_) {
+      document.getElementById('progress-label').innerHTML =
+        '<span class="spin" aria-hidden="true"></span>Reconnexion…';
+    }
+  }
+
+  function updateStep(n, status, label) {
+    const li   = document.getElementById('step-' + n);
+    if (!li) return;
+    const dot    = li.querySelector('.step-dot');
+    const text   = li.querySelector('.step-text');
+    const srText = document.getElementById('step-' + n + '-status');
+    if (label) text.textContent = label;
+    if (srText) srText.textContent = SR_LABELS[status] || status;
+
+    if (status === 'running') {
+      dot.className  = 'step-dot is-running';
+      dot.innerHTML  = '<span class="spin" aria-hidden="true" style="width:11px;height:11px;border-width:1.5px"></span>';
+      text.className = 'step-text is-active';
+    } else if (status === 'done') {
+      dot.className  = 'step-dot is-done';
+      dot.innerHTML  = '<i class="bi bi-check" aria-hidden="true" style="font-size:.75rem"></i>';
+      text.className = 'step-text';
+    } else if (status === 'error') {
+      dot.className  = 'step-dot is-error';
+      dot.innerHTML  = '<i class="bi bi-x" aria-hidden="true" style="font-size:.8rem"></i>';
+      text.className = 'step-text';
+    }
+  }
+
+  let _lastLogCount = 0;
+  function updateLog(entries) {
+    if (!entries || entries.length === _lastLogCount) return;
+    const el = document.getElementById('log-output');
+    for (let i = _lastLogCount; i < entries.length; i++) {
+      const e = entries[i];
+      const color = e.level === 'error' ? '#f87171' : e.level === 'warn' ? '#fbbf24' : '#c8d0e0';
+      el.innerHTML += `<span style="color:var(--dim)">${e.ts}</span> <span style="color:${color}">${e.msg}</span>\n`;
+    }
+    _lastLogCount = entries.length;
+    el.scrollTop = el.scrollHeight;
+    if (entries.length > 0) document.getElementById('log-details').open = true;
+  }
+
+  function showError(msg) {
+    document.querySelectorAll('.step-dot.is-running').forEach(d => {
+      d.className = 'step-dot is-error';
+      d.innerHTML = '<i class="bi bi-x" aria-hidden="true" style="font-size:.8rem"></i>';
+    });
+    document.getElementById('progress-label').innerHTML =
+      '<i class="bi bi-x-circle" aria-hidden="true" style="color:var(--red)"></i>Provisionnement échoué.';
+    document.getElementById('error-message').textContent = msg;
+    document.getElementById('error-section').classList.remove('hidden');
+  }
+
+  function resetForm() {
+    if (pollInterval) clearInterval(pollInterval);
+    ['progress-section','error-section','success-section'].forEach(id =>
+      document.getElementById(id).classList.add('hidden'));
+    document.getElementById('form-section').classList.remove('hidden');
+    document.getElementById('back-btn').classList.remove('hidden');
+    document.querySelectorAll('.step-dot').forEach(d => {
+      d.className = 'step-dot';
+      d.innerHTML = '<i class="bi bi-circle" aria-hidden="true" style="font-size:.6rem"></i>';
+    });
+    document.querySelectorAll('.step-text').forEach(t => t.className = 'step-text');
+    for (let n = 1; n <= 8; n++) {
+      const sr = document.getElementById('step-' + n + '-status');
+      if (sr) sr.textContent = 'En attente';
+    }
+    document.getElementById('progress-label').innerHTML =
+      '<span class="spin" aria-hidden="true"></span>Provisionnement en cours…';
+  }
+</script>
+{% endblock %}

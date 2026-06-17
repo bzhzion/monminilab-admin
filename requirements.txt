@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+sqlalchemy
+pymysql
+docker
+httpx
+python-jose[cryptography]
+passlib[bcrypt]
+pydantic-settings
+itsdangerous
+email-validator
+slowapi
+cryptography
