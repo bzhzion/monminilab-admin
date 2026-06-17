@@ -58,14 +58,19 @@ def send_welcome_email(
     </tr>
   </table>
 
-  <p>
+  <p style="margin-bottom:8px">
     Par mesure de sécurité, nous vous recommandons de changer votre mot de passe
-    dès votre première connexion. Rendez-vous sur le portail avec votre adresse
-    <strong>{from_addr}</strong> et cliquez sur <em>Mot de passe oublié ?</em> :
+    dès que possible. Pour cela :
   </p>
+  <ol style="margin:0 0 20px 20px;padding:0;line-height:2">
+    <li>Rendez-vous sur le portail : <a href="{portal_url}">{portal_url}</a></li>
+    <li>Connectez-vous avec votre adresse <strong>{from_addr}</strong> — vous recevrez un code de vérification sur votre email</li>
+    <li>Cliquez sur <strong>Mot de passe oublié ?</strong></li>
+    <li>Suivez le lien reçu par email pour choisir votre nouveau mot de passe</li>
+  </ol>
   <p style="margin:20px 0">
     <a href="{portal_url}" style="background:#a00000;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold">
-      Accéder au portail
+      Accéder au portail MonMiniLab
     </a>
   </p>
 
