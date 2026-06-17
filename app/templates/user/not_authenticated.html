@@ -44,6 +44,16 @@
       font-size: .5rem; font-weight: 800; color: #fff;
     }
     .brand-name { font-size: .88rem; font-weight: 700; color: var(--muted); }
+    .btn-logout {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 24px; padding: 8px 16px;
+      font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 600;
+      color: var(--muted); background: transparent;
+      border: 1px solid var(--border); border-radius: 6px;
+      text-decoration: none; cursor: pointer;
+      transition: color .15s, border-color .15s;
+    }
+    .btn-logout:hover { color: var(--text); border-color: var(--muted); }
   </style>
 </head>
 <body>
@@ -57,6 +67,9 @@
     </div>
     <h1>Accès non autorisé</h1>
     <p>Aucun site actif n'est associé à votre adresse email. Contactez l'administrateur si vous pensez qu'il s'agit d'une erreur.</p>
+    <a href="/cdn-cgi/access/logout" class="btn-logout">
+      <i class="bi bi-box-arrow-right" aria-hidden="true"></i>Se déconnecter
+    </a>
   </div>
 </body>
 </html>
